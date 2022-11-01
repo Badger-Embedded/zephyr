@@ -37,12 +37,12 @@ static int set_power_mode(enum bmp5_powermode powermode, struct bmp581_data *drv
 
 int reg_read(uint8_t reg, uint8_t *data, uint16_t length, struct bmp581_data *drv)
 {
-	return i2c_burst_read_dt(drv->i2c, reg, data, length);
+	return i2c_burst_read_dt(&drv->i2c, reg, data, length);
 }
 
 int reg_write(uint8_t reg, const uint8_t *data, uint16_t length, struct bmp581_data *drv)
 {
-	return i2c_burst_write_dt(drv->i2c, reg, data, length);
+	return i2c_burst_write_dt(&drv->i2c, reg, data, length);
 }
 
 static int set_power_mode(enum bmp5_powermode powermode, struct bmp581_data *drv)
