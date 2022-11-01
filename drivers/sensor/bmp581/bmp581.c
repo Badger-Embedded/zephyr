@@ -390,7 +390,7 @@ static int bmp581_channel_get(const struct device *dev, enum sensor_channel chan
 		*/
 		
 		double altitude = 44307.69 * (1.0 - pow(drv->last_sample.pressure / sensor_value_to_double(val), 0.1903));
-		sensor_value_from_double(altitude);
+		sensor_value_from_double(val, altitude);
 		
 		return BMP5_OK;
 	}
