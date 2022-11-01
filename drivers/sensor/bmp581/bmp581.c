@@ -60,7 +60,7 @@ static int set_power_mode(enum bmp5_powermode powermode, struct bmp581_data *drv
 
 	if (current_powermode != BMP5_POWERMODE_STANDBY) {
 		/* Device should be set to standby before transitioning to forced mode or normal
-		 * mode or continous mode. */
+		 * mode or continuous mode. */
 
 		ret = reg_read(BMP5_REG_ODR_CONFIG, &odr, 1, drv);
 		if (ret == BMP5_OK) {
@@ -89,7 +89,7 @@ static int set_power_mode(enum bmp5_powermode powermode, struct bmp581_data *drv
 		break;
 	case BMP5_POWERMODE_NORMAL:
 	case BMP5_POWERMODE_FORCED:
-	case BMP5_POWERMODE_CONTINOUS:
+	case BMP5_POWERMODE_CONTINUOUS:
 		odr = BMP5_SET_BITSLICE(odr, BMP5_DEEP_DISABLE, BMP5_DEEP_DISABLED);
 		odr = BMP5_SET_BITS_POS_0(odr, BMP5_POWERMODE, powermode);
 		ret = reg_write(BMP5_REG_ODR_CONFIG, &odr, 1, drv);
@@ -109,6 +109,7 @@ static int get_power_mode(enum bmp5_powermode *powermode, struct bmp581_data *dr
 	if (powermode != NULL) {
 		uint8_t reg = 0;
 		uint8_t raw_power_mode = 0;
+
 		ret = reg_read(BMP5_REG_ODR_CONFIG, &reg, 1, drv);
 		if (ret != BMP5_OK) {
 			LOG_DBG("Failed to read odr config to get power mode!");
@@ -128,7 +129,7 @@ static int get_power_mode(enum bmp5_powermode *powermode, struct bmp581_data *dr
 			 * If deep_dis = 1(BMP5_DEEP_DISABLED) then deepstandby mode is disabled
 			 */
 			if (deep_dis == BMP5_DEEP_ENABLED) {
-				// TODO: check if it is really deep standby
+				/* TODO: check if it is really deep standby */
 				*powermode = BMP5_POWERMODE_DEEP_STANDBY;
 			} else {
 				*powermode = BMP5_POWERMODE_STANDBY;
@@ -142,8 +143,8 @@ static int get_power_mode(enum bmp5_powermode *powermode, struct bmp581_data *dr
 		case BMP5_POWERMODE_FORCED:
 			*powermode = BMP5_POWERMODE_FORCED;
 			break;
-		case BMP5_POWERMODE_CONTINOUS:
-			*powermode = BMP5_POWERMODE_CONTINOUS;
+		case BMP5_POWERMODE_CONTINUOUS:
+			*powermode = BMP5_POWERMODE_CONTINUOUS;
 			break;
 		default:
 			ret = BMP5_E_INVALID_POWERMODE;
@@ -253,7 +254,7 @@ static int set_osr_config(const struct sensor_value *osr, enum sensor_channel ch
 
 	if (osr != NULL) {
 		uint8_t oversampling = osr->val1;
-		uint8_t press_en = osr->val2 != 0; // if it is not 0 then pressure is enabled
+		uint8_t press_en = osr->val2 != 0; /* if it is not 0 then pressure is enabled */
 		uint8_t osr_val = 0;
 
 		ret = reg_read(BMP5_REG_OSR_CONFIG, &osr_val, 1, drv);
@@ -371,7 +372,7 @@ static int bmp581_sample_fetch(const struct device *dev, enum sensor_channel cha
 static int bmp581_channel_get(const struct device *dev, enum sensor_channel chan,
 			      struct sensor_value *val)
 {
-	static const uint8_t FIXED_PRECISION_COEFFICIENT = 100; // must be power of 10
+	static const uint8_t FIXED_PRECISION_COEFFICIENT = 100; /* must be power of 10 */
 	struct bmp581_data *drv = (struct bmp581_data *)dev->data;
 
 	if (val == NULL) {
@@ -380,8 +381,10 @@ static int bmp581_channel_get(const struct device *dev, enum sensor_channel chan
 
 	switch (chan) {
 	case SENSOR_CHAN_ALTITUDE: {
-		// val2 must have P0 (typically pressure at sea level or ground)
-		// calculate altitude in meters
+		/*
+			val2 must have P0 (typically pressure at sea level or ground)
+			calculate altitude in meters
+		*/
 		float altitude = 44330 * (1.0 - pow(drv->last_sample.pressure / val->val2, 0.1903));
 		val->val1 = (int32_t)altitude;
 		val->val2 = ((int32_t)(altitude * FIXED_PRECISION_COEFFICIENT) %
@@ -389,11 +392,11 @@ static int bmp581_channel_get(const struct device *dev, enum sensor_channel chan
 		return BMP5_OK;
 	}
 	case SENSOR_CHAN_PRESS:
-		// returns pressure in Pa
+		/* returns pressure in Pa */
 		sensor_value_from_double(val, drv->last_sample.pressure);
 		return BMP5_OK;
 	case SENSOR_CHAN_AMBIENT_TEMP:
-		// returns temperature in Celcius
+		/* returns temperature in Celcius */
 		sensor_value_from_double(val, drv->last_sample.temperature);
 		return BMP5_OK;
 	default:
@@ -417,7 +420,7 @@ static int set_iir_config(const struct sensor_value *iir, struct bmp581_data *dr
 		/* IIR configuration is writable only during STANDBY mode(as per datasheet) */
 		set_power_mode(BMP5_POWERMODE_STANDBY, drv);
 
-		// update IIR config
+		/* update IIR config */
 		uint8_t dsp_config[2];
 
 		ret = reg_read(BMP5_REG_DSP_CONFIG, dsp_config, 2, drv);
@@ -425,13 +428,13 @@ static int set_iir_config(const struct sensor_value *iir, struct bmp581_data *dr
 			LOG_DBG("Failed to read dsp config register.");
 			return ret;
 		}
-		// Put IIR filtered values in data registers
+		/* Put IIR filtered values in data registers */
 		dsp_config[0] =
 			BMP5_SET_BITSLICE(dsp_config[0], BMP5_SHDW_SET_IIR_TEMP, BMP5_ENABLE);
 		dsp_config[0] =
 			BMP5_SET_BITSLICE(dsp_config[0], BMP5_SHDW_SET_IIR_PRESS, BMP5_ENABLE);
 
-		// Configure IIR filter
+		/* Configure IIR filter */
 		dsp_config[1] = iir->val1;
 		dsp_config[1] = BMP5_SET_BITSLICE(dsp_config[1], BMP5_SET_IIR_PRESS, iir->val2);
 
@@ -443,7 +446,7 @@ static int set_iir_config(const struct sensor_value *iir, struct bmp581_data *dr
 			return ret;
 		}
 
-		// Restore previous power mode if it is not standby already
+		/* Restore previous power mode if it is not standby already */
 		if (prev_powermode != BMP5_POWERMODE_STANDBY) {
 			ret = set_power_mode(prev_powermode, drv);
 		}
@@ -486,7 +489,7 @@ static int bmp581_init(const struct device *dev)
 	struct bmp581_data *drv = (struct bmp581_data *)dev->data;
 	int ret = -1;
 
-	// Reset the chip id.
+	/* Reset the chip id. */
 	drv->chip_id = 0;
 	memset(&drv->osr_odr_press_config, 0, sizeof(drv->osr_odr_press_config));
 	memset(&drv->last_sample, 0, sizeof(drv->last_sample));
@@ -524,7 +527,7 @@ static int bmp581_init(const struct device *dev)
 			}
 		}
 	} else {
-		// that means something went wrong
+		/* that means something went wrong */
 		LOG_ERR("Unexpected chip id (%x). Expected (%x or %x)", drv->chip_id,
 			BMP5_CHIP_ID_PRIM, BMP5_CHIP_ID_SEC);
 		return BMP5_E_INVALID_CHIP_ID;
