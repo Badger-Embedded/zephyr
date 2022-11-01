@@ -6,6 +6,7 @@
 
 menuconfig BMP581
 	bool "BMP581"
-	depends on I2C && GPIO
+	depends on DT_HAS_BOSCH_BMP581_ENABLED
+	select I2C
 	help
 	  Enable BMP581 altitude sensor

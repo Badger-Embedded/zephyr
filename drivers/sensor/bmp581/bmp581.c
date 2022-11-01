@@ -129,7 +129,7 @@ static int get_power_mode(enum bmp5_powermode *powermode, struct bmp581_data *dr
 			 * If deep_dis = 1(BMP5_DEEP_DISABLED) then deepstandby mode is disabled
 			 */
 			if (deep_dis == BMP5_DEEP_ENABLED) {
-				/* TODO: check if it is really deep standby */
+				// TODO: check if it is really deep standby
 				*powermode = BMP5_POWERMODE_DEEP_STANDBY;
 			} else {
 				*powermode = BMP5_POWERMODE_STANDBY;
@@ -516,14 +516,6 @@ static int bmp581_init(const struct device *dev)
 			if (ret != BMP5_OK) {
 				LOG_ERR("Unexpected chip id (%x). Expected (%x or %x)",
 					drv->chip_id, BMP5_CHIP_ID_PRIM, BMP5_CHIP_ID_SEC);
-			} else {
-#ifdef CONFIG_BMP581_TRIGGER
-				ret = bmp581_trigger_init(dev);
-				if (ret != BMP5_OK) {
-					LOG_ERR("Unable to initialize trigger for BMP581");
-					return ret;
-				}
-#endif
 			}
 		}
 	} else {
@@ -537,25 +529,14 @@ static int bmp581_init(const struct device *dev)
 
 static const struct sensor_driver_api bmp581_driver_api = {.sample_fetch = bmp581_sample_fetch,
 							   .channel_get = bmp581_channel_get,
-#ifdef CONFIG_BMP581_TRIGGER
-							   .trigger_set = bmp581_trigger_set,
-#endif
 							   .attr_set = bmp581_attr_set};
 
-#ifdef CONFIG_BMP581_TRIGGER
 #define BMP581_CONFIG(i)                                                                           \
 	static const struct bmp581_config bmp581_config_##i = {                                    \
-		.i2c = DEVICE_DT_GET(DT_INST_BUS(i)),                                              \
-		.i2c_addr = DT_INST_REG_ADDR(i),                                                   \
-		.input = GPIO_DT_SPEC_INST_GET(i, int_gpios),                                      \
-	}
-#else
-#define BMP581_CONFIG(i)                                                                           \
-	static const struct bmp581_config bmp581_config_##i = {                                    \
-		.i2c = DEVICE_DT_GET(DT_INST_BUS(i)),                                              \
+		.i2c = I2C_DT_SPEC_INST_GET(i),                                              \
 		.i2c_addr = DT_INST_REG_ADDR(i),                                                   \
 	}
-#endif
+
 #define BMP581_INIT(i)                                                                             \
 	static struct bmp581_data bmp581_data_##i;                                                 \
 	BMP581_CONFIG(i);                                                                          \

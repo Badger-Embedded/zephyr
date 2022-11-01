@@ -320,13 +320,6 @@ struct bmp581_sample {
 
 struct bmp581_data {
 	const struct device *i2c;
-#ifdef CONFIG_BMP581_TRIGGER
-	const struct device *dev;
-	struct gpio_dt_spec gpio;
-	struct gpio_callback gpio_cb;
-	struct k_work work;
-	sensor_trigger_handler_t drdy_handler;
-#endif
 	uint8_t i2c_addr;
 	uint8_t chip_id;
 	struct bmp581_sample last_sample;
@@ -336,16 +329,8 @@ struct bmp581_data {
 struct bmp581_config {
 	struct i2c_dt_spec i2c;
 	uint16_t i2c_addr;
-#ifdef CONFIG_BMP581_TRIGGER
-	struct gpio_dt_spec input;
-#endif
 };
 
-#ifdef CONFIG_BMP581_TRIGGER
-int bmp581_trigger_init(const struct device *dev);
-int bmp581_trigger_set(const struct device *dev, const struct sensor_trigger *trig,
-		       sensor_trigger_handler_t handler);
-#endif
 int reg_read(uint8_t reg, uint8_t *data, uint16_t length, struct bmp581_data *drv);
 int reg_write(uint8_t reg, const uint8_t *data, uint16_t length, struct bmp581_data *drv);
 
