@@ -382,13 +382,16 @@ static int bmp581_channel_get(const struct device *dev, enum sensor_channel chan
 	switch (chan) {
 	case SENSOR_CHAN_ALTITUDE: {
 		/*
-			val2 must have P0 (typically pressure at sea level or ground)
-			calculate altitude in meters
+			val must have P0 (typically pressure at sea level or ground)
+			whitepaper regarding calculation of pressure altitude can be found in:
+			https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf
+
+			Following formula calculates the pressure in meters
 		*/
-		float altitude = 44330 * (1.0 - pow(drv->last_sample.pressure / val->val2, 0.1903));
-		val->val1 = (int32_t)altitude;
-		val->val2 = ((int32_t)(altitude * FIXED_PRECISION_COEFFICIENT) %
-			     FIXED_PRECISION_COEFFICIENT);
+		
+		double altitude = 44307.69 * (1.0 - pow(drv->last_sample.pressure / sensor_value_to_double(val), 0.1903));
+		sensor_value_from_double(altitude);
+		
 		return BMP5_OK;
 	}
 	case SENSOR_CHAN_PRESS:
