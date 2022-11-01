@@ -12,14 +12,13 @@
 #ifndef ZEPHYR_DRIVERS_SENSOR_BMP581_BMP581_H_
 #define ZEPHYR_DRIVERS_SENSOR_BMP581_BMP581_H_
 
-#include "bmp581_user.h"
-
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/types.h>
+#include <zephyr/drivers/sensor/bmp581_user.h>
 
 #define DT_DRV_COMPAT bosch_bmp581
 
