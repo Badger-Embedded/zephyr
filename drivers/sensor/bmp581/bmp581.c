@@ -37,12 +37,12 @@ static int set_power_mode(enum bmp5_powermode powermode, struct bmp581_data *drv
 
 int reg_read(uint8_t reg, uint8_t *data, uint16_t length, struct bmp581_data *drv)
 {
-	return i2c_burst_read(drv->i2c, drv->i2c_addr, reg, data, length);
+	return i2c_burst_read_dt(drv->i2c, reg, data, length);
 }
 
 int reg_write(uint8_t reg, const uint8_t *data, uint16_t length, struct bmp581_data *drv)
 {
-	return i2c_burst_write(drv->i2c, drv->i2c_addr, reg, data, length);
+	return i2c_burst_write_dt(drv->i2c, reg, data, length);
 }
 
 static int set_power_mode(enum bmp5_powermode powermode, struct bmp581_data *drv)
@@ -494,11 +494,7 @@ static int bmp581_init(const struct device *dev)
 	memset(&drv->osr_odr_press_config, 0, sizeof(drv->osr_odr_press_config));
 	memset(&drv->last_sample, 0, sizeof(drv->last_sample));
 
-	drv->i2c = cfg->i2c.bus;
-	if (drv->i2c == NULL) {
-		LOG_ERR("Could not get pointer to i2c device");
-		return -EINVAL;
-	}
+	drv->i2c = cfg->i2c;
 
 	drv->i2c_addr = cfg->i2c_addr;
 

@@ -319,7 +319,7 @@ struct bmp581_sample {
 };
 
 struct bmp581_data {
-	const struct device *i2c;
+	struct i2c_dt_spec i2c;
 	uint8_t i2c_addr;
 	uint8_t chip_id;
 	struct bmp581_sample last_sample;
