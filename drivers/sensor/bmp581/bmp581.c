@@ -537,7 +537,7 @@ static const struct sensor_driver_api bmp581_driver_api = {.sample_fetch = bmp58
 	static struct bmp581_data bmp581_data_##i;                                                 \
 	BMP581_CONFIG(i);                                                                          \
                                                                                                    \
-	DEVICE_DT_INST_DEFINE(i, bmp581_init, NULL, &bmp581_data_##i, &bmp581_config_##i,          \
+	SENSOR_DEVICE_DT_INST_DEFINE(i, bmp581_init, NULL, &bmp581_data_##i, &bmp581_config_##i,          \
 			      POST_KERNEL, CONFIG_SENSOR_INIT_PRIORITY, &bmp581_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(BMP581_INIT)
