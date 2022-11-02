@@ -351,18 +351,24 @@ static int bmp581_sample_fetch(const struct device *dev, enum sensor_channel cha
 	if (ret == BMP5_OK) {
 		int32_t raw_temperature =
 			(int32_t)((uint32_t)(data[2] << 16) | (uint16_t)(data[1] << 8) | data[0]);
-		/* Division by 2^16(whose equivalent value is 65536) is performed to get temperature
-		 * data in deg C */
-		drv->last_sample.temperature = (float)(raw_temperature / 65536.0);
+		/* 
+		 * Division by 2^16(whose equivalent value is 65536) is performed to get temperature
+		 * data in deg C 
+		 */
+
+		sensor_value_from_double(&drv->last_sample.temperature, (raw_temperature / 65536.0));
 
 		if (drv->osr_odr_press_config.press_en == BMP5_ENABLE) {
 			uint32_t raw_pressure = (uint32_t)((uint32_t)(data[5] << 16) |
 							   (uint16_t)(data[4] << 8) | data[3]);
-			/* Division by 2^6(whose equivalent value is 64) is performed to get
-			 * pressure data in Pa */
-			drv->last_sample.pressure = (float)(raw_pressure / 64.0);
+			/* 
+			 * Division by 2^6(whose equivalent value is 64) is performed to get
+			 * pressure data in Pa 
+			 */
+			sensor_value_from_double(&drv->last_sample.pressure, (raw_pressure / 64.0));
 		} else {
-			drv->last_sample.pressure = 0;
+			drv->last_sample.pressure.val1 = 0;
+			drv->last_sample.pressure.val2 = 0;
 		}
 	}
 
@@ -388,19 +394,19 @@ static int bmp581_channel_get(const struct device *dev, enum sensor_channel chan
 
 			Following formula calculates the pressure in meters
 		*/
-		
-		double altitude = 44307.69 * (1.0 - pow(drv->last_sample.pressure / sensor_value_to_double(val), 0.1903));
+		double last_pressure = sensor_value_to_double(&drv->last_sample.pressure);
+		double altitude = 44307.69 * (1.0 - pow(last_pressure / sensor_value_to_double(val), 0.1903));
 		sensor_value_from_double(val, altitude);
 		
 		return BMP5_OK;
 	}
 	case SENSOR_CHAN_PRESS:
 		/* returns pressure in Pa */
-		sensor_value_from_double(val, drv->last_sample.pressure);
+		*val = drv->last_sample.pressure;
 		return BMP5_OK;
 	case SENSOR_CHAN_AMBIENT_TEMP:
 		/* returns temperature in Celcius */
-		sensor_value_from_double(val, drv->last_sample.temperature);
+		*val = drv->last_sample.temperature;
 		return BMP5_OK;
 	default:
 		return -ENOTSUP;

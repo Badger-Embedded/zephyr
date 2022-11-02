@@ -313,8 +313,8 @@ struct bmp581_osr_odr_press_config {
 };
 
 struct bmp581_sample {
-	float pressure;
-	float temperature;
+	struct sensor_value pressure;
+	struct sensor_value temperature;
 };
 
 struct bmp581_data {
