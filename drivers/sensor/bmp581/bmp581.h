@@ -18,7 +18,7 @@
 #include <zephyr/types.h>
 #include <zephyr/device.h>
 #include <zephyr/sys/util.h>
-#include "bmp581_user.h"
+#include <zephyr/drivers/sensor/bmp581_user.h>
 
 #define DT_DRV_COMPAT bosch_bmp581
 
